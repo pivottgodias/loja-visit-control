@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Visita } from '../types/types';
 import { useAppContext } from '../contexts/AppContext';
@@ -64,7 +65,8 @@ const initialVisita: Omit<Visita, 'id'> = {
 
 const VisitaForm: React.FC<VisitaFormProps> = ({ visita, onClose }) => {
   const { promotores, lojas, rotas, addVisita, updateVisita } = useAppContext();
-  const [form, setForm] = useState<Omit<Visita, 'id'>>({...initialVisita});
+  // Fix: Initialize with the initialVisita object directly instead of spreading it
+  const [form, setForm] = useState<Omit<Visita, 'id'>>(initialVisita);
   const [activeTab, setActiveTab] = useState<'geral' | 'financeiro' | 'planejamento'>('geral');
   
   // Inicializar form com visita existente, se houver
