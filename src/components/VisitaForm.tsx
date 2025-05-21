@@ -18,7 +18,8 @@ interface VisitaFormProps {
   onClose: () => void;
 }
 
-const initialVisita: Omit<Visita, 'id'> = {
+// Define initial state directly as an object without spreading
+const initialVisita = {
   promotorId: '',
   lojaId: '',
   rotaId: '',
@@ -65,8 +66,10 @@ const initialVisita: Omit<Visita, 'id'> = {
 
 const VisitaForm: React.FC<VisitaFormProps> = ({ visita, onClose }) => {
   const { promotores, lojas, rotas, addVisita, updateVisita } = useAppContext();
-  // Create a complete copy of initialVisita to avoid reference issues
+  
+  // Initialize form with a deep copy of initialVisita
   const [form, setForm] = useState<Omit<Visita, 'id'>>(() => {
+    // Return a new object with all properties explicitly copied
     return {
       promotorId: initialVisita.promotorId,
       lojaId: initialVisita.lojaId,
@@ -74,8 +77,28 @@ const VisitaForm: React.FC<VisitaFormProps> = ({ visita, onClose }) => {
       periodo: initialVisita.periodo,
       quantVisitas: initialVisita.quantVisitas,
       horasTotais: initialVisita.horasTotais,
-      diasVisita: { ...initialVisita.diasVisita },
-      faturamentoMensal: { ...initialVisita.faturamentoMensal },
+      diasVisita: {
+        segunda: initialVisita.diasVisita.segunda,
+        terca: initialVisita.diasVisita.terca,
+        quarta: initialVisita.diasVisita.quarta,
+        quinta: initialVisita.diasVisita.quinta,
+        sexta: initialVisita.diasVisita.sexta,
+        sabado: initialVisita.diasVisita.sabado,
+      },
+      faturamentoMensal: {
+        janeiro: initialVisita.faturamentoMensal.janeiro,
+        fevereiro: initialVisita.faturamentoMensal.fevereiro,
+        marco: initialVisita.faturamentoMensal.marco,
+        abril: initialVisita.faturamentoMensal.abril,
+        maio: initialVisita.faturamentoMensal.maio,
+        junho: initialVisita.faturamentoMensal.junho,
+        julho: initialVisita.faturamentoMensal.julho,
+        agosto: initialVisita.faturamentoMensal.agosto,
+        setembro: initialVisita.faturamentoMensal.setembro,
+        outubro: initialVisita.faturamentoMensal.outubro,
+        novembro: initialVisita.faturamentoMensal.novembro,
+        dezembro: initialVisita.faturamentoMensal.dezembro,
+      },
       custoPorPromotor: initialVisita.custoPorPromotor,
       custoPorPromotorHora: initialVisita.custoPorPromotorHora,
       custoPorLoja: initialVisita.custoPorLoja,
@@ -92,11 +115,13 @@ const VisitaForm: React.FC<VisitaFormProps> = ({ visita, onClose }) => {
       prazo: initialVisita.prazo
     };
   });
+  
   const [activeTab, setActiveTab] = useState<'geral' | 'financeiro' | 'planejamento'>('geral');
   
-  // Inicializar form com visita existente, se houver
+  // Update form when visita prop changes
   useEffect(() => {
     if (visita) {
+      // Explicitly copy all properties to avoid spread operator issues
       setForm({
         promotorId: visita.promotorId,
         lojaId: visita.lojaId,
@@ -104,8 +129,28 @@ const VisitaForm: React.FC<VisitaFormProps> = ({ visita, onClose }) => {
         periodo: visita.periodo,
         quantVisitas: visita.quantVisitas,
         horasTotais: visita.horasTotais,
-        diasVisita: { ...visita.diasVisita },
-        faturamentoMensal: { ...visita.faturamentoMensal },
+        diasVisita: {
+          segunda: visita.diasVisita.segunda,
+          terca: visita.diasVisita.terca,
+          quarta: visita.diasVisita.quarta,
+          quinta: visita.diasVisita.quinta,
+          sexta: visita.diasVisita.sexta,
+          sabado: visita.diasVisita.sabado,
+        },
+        faturamentoMensal: {
+          janeiro: visita.faturamentoMensal.janeiro,
+          fevereiro: visita.faturamentoMensal.fevereiro,
+          marco: visita.faturamentoMensal.marco,
+          abril: visita.faturamentoMensal.abril,
+          maio: visita.faturamentoMensal.maio,
+          junho: visita.faturamentoMensal.junho,
+          julho: visita.faturamentoMensal.julho,
+          agosto: visita.faturamentoMensal.agosto,
+          setembro: visita.faturamentoMensal.setembro,
+          outubro: visita.faturamentoMensal.outubro,
+          novembro: visita.faturamentoMensal.novembro,
+          dezembro: visita.faturamentoMensal.dezembro,
+        },
         custoPorPromotor: visita.custoPorPromotor,
         custoPorPromotorHora: visita.custoPorPromotorHora,
         custoPorLoja: visita.custoPorLoja,
@@ -124,10 +169,11 @@ const VisitaForm: React.FC<VisitaFormProps> = ({ visita, onClose }) => {
     }
   }, [visita]);
   
+  // Handle form field changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     
-    // Lidar com os diferentes tipos de campos
+    // Handle nested properties in form state
     if (name.includes('.')) {
       const [parent, child] = name.split('.');
       setForm(prev => ({
@@ -149,6 +195,7 @@ const VisitaForm: React.FC<VisitaFormProps> = ({ visita, onClose }) => {
     }
   };
 
+  // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     try {
