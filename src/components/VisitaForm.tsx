@@ -176,15 +176,35 @@ const VisitaForm: React.FC<VisitaFormProps> = ({ visita, onClose }) => {
     // Handle nested properties in form state
     if (name.includes('.')) {
       const [parent, child] = name.split('.');
-      setForm(prev => ({
-        ...prev,
-        [parent]: {
-          ...prev[parent as keyof typeof prev],
-          [child]: type === 'checkbox' 
-            ? (e.target as HTMLInputElement).checked
-            : type === 'number' ? Number(value) : value
-        }
-      }));
+      
+      if (parent === 'diasVisita') {
+        setForm(prev => ({
+          ...prev,
+          diasVisita: {
+            ...prev.diasVisita,
+            [child]: (e.target as HTMLInputElement).checked
+          }
+        }));
+      } else if (parent === 'faturamentoMensal') {
+        setForm(prev => ({
+          ...prev,
+          faturamentoMensal: {
+            ...prev.faturamentoMensal,
+            [child]: type === 'number' ? Number(value) : value
+          }
+        }));
+      } else {
+        // For other nested objects we might add in the future
+        setForm(prev => ({
+          ...prev,
+          [parent]: {
+            ...prev[parent as keyof typeof prev],
+            [child]: type === 'checkbox' 
+              ? (e.target as HTMLInputElement).checked
+              : type === 'number' ? Number(value) : value
+          }
+        }));
+      }
     } else {
       setForm(prev => ({
         ...prev,
