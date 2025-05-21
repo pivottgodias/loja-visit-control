@@ -89,7 +89,9 @@ const VisitaForm: React.FC<VisitaFormProps> = ({ visita, onClose }) => {
   // Inicializar form com visita existente, se houver
   useEffect(() => {
     if (visita) {
-      setForm({ ...visita });
+      // Use spread on object with explicit type to avoid TypeScript errors
+      const { id, ...visitaData } = visita;
+      setForm(visitaData);
     }
   }, [visita]);
   
