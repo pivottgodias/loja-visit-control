@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Visita } from '../types/types';
 import { useAppContext } from '../contexts/AppContext';
@@ -71,32 +70,22 @@ const VisitaForm: React.FC<VisitaFormProps> = ({ visita, onClose }) => {
   // Inicializar form com visita existente, se houver
   useEffect(() => {
     if (visita) {
-      // Use explicit destructuring to avoid TypeScript errors
-      const visitaData = {
-        promotorId: visita.promotorId,
-        lojaId: visita.lojaId,
-        rotaId: visita.rotaId,
-        periodo: visita.periodo,
-        quantVisitas: visita.quantVisitas,
-        horasTotais: visita.horasTotais,
-        diasVisita: visita.diasVisita,
-        faturamentoMensal: visita.faturamentoMensal,
-        custoPorPromotor: visita.custoPorPromotor,
-        custoPorPromotorHora: visita.custoPorPromotorHora,
-        custoPorLoja: visita.custoPorLoja,
-        mixIdeal: visita.mixIdeal,
-        mixIdealPontos: visita.mixIdealPontos,
-        produtoBonus: visita.produtoBonus,
-        sugestaoVisitas: visita.sugestaoVisitas,
-        quantHoras: visita.quantHoras,
-        frequenciaNegociada: visita.frequenciaNegociada,
-        frequenciaSolicitada: visita.frequenciaSolicitada,
-        justificativa: visita.justificativa,
-        decisaoFinal: visita.decisaoFinal,
-        planoDeAcao: visita.planoDeAcao,
-        prazo: visita.prazo
-      };
-      setForm(visitaData);
+      // Fix: Use explicit destructuring to avoid TypeScript errors
+      const { 
+        promotorId, lojaId, rotaId, periodo, quantVisitas, horasTotais, 
+        diasVisita, faturamentoMensal, custoPorPromotor, custoPorPromotorHora, 
+        custoPorLoja, mixIdeal, mixIdealPontos, produtoBonus, sugestaoVisitas, 
+        quantHoras, frequenciaNegociada, frequenciaSolicitada, justificativa, 
+        decisaoFinal, planoDeAcao, prazo 
+      } = visita;
+      
+      setForm({
+        promotorId, lojaId, rotaId, periodo, quantVisitas, horasTotais, 
+        diasVisita, faturamentoMensal, custoPorPromotor, custoPorPromotorHora, 
+        custoPorLoja, mixIdeal, mixIdealPontos, produtoBonus, sugestaoVisitas, 
+        quantHoras, frequenciaNegociada, frequenciaSolicitada, justificativa, 
+        decisaoFinal, planoDeAcao, prazo
+      });
     }
   }, [visita]);
   
