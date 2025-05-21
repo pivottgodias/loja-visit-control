@@ -25,7 +25,9 @@ const RotaForm: React.FC<RotaFormProps> = ({ rota, onClose }) => {
 
   useEffect(() => {
     if (rota) {
-      setForm({ ...rota });
+      // Use spread on object with explicit type to avoid TypeScript errors
+      const { id, ...rotaData } = rota;
+      setForm(rotaData);
     }
   }, [rota]);
 

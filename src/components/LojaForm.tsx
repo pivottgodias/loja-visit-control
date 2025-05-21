@@ -34,7 +34,9 @@ const LojaForm: React.FC<LojaFormProps> = ({ loja, onClose }) => {
 
   useEffect(() => {
     if (loja) {
-      setForm({ ...loja });
+      // Use spread on object with explicit type to avoid TypeScript errors
+      const { id, ...lojaData } = loja;
+      setForm(lojaData);
     }
   }, [loja]);
 
