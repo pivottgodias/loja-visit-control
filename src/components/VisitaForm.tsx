@@ -65,28 +65,61 @@ const initialVisita: Omit<Visita, 'id'> = {
 
 const VisitaForm: React.FC<VisitaFormProps> = ({ visita, onClose }) => {
   const { promotores, lojas, rotas, addVisita, updateVisita } = useAppContext();
-  // Fix: Initialize with the initialVisita object directly instead of spreading it
-  const [form, setForm] = useState<Omit<Visita, 'id'>>(initialVisita);
+  // Create a complete copy of initialVisita to avoid reference issues
+  const [form, setForm] = useState<Omit<Visita, 'id'>>(() => {
+    return {
+      promotorId: initialVisita.promotorId,
+      lojaId: initialVisita.lojaId,
+      rotaId: initialVisita.rotaId,
+      periodo: initialVisita.periodo,
+      quantVisitas: initialVisita.quantVisitas,
+      horasTotais: initialVisita.horasTotais,
+      diasVisita: { ...initialVisita.diasVisita },
+      faturamentoMensal: { ...initialVisita.faturamentoMensal },
+      custoPorPromotor: initialVisita.custoPorPromotor,
+      custoPorPromotorHora: initialVisita.custoPorPromotorHora,
+      custoPorLoja: initialVisita.custoPorLoja,
+      mixIdeal: initialVisita.mixIdeal,
+      mixIdealPontos: initialVisita.mixIdealPontos,
+      produtoBonus: initialVisita.produtoBonus,
+      sugestaoVisitas: initialVisita.sugestaoVisitas,
+      quantHoras: initialVisita.quantHoras,
+      frequenciaNegociada: initialVisita.frequenciaNegociada,
+      frequenciaSolicitada: initialVisita.frequenciaSolicitada,
+      justificativa: initialVisita.justificativa,
+      decisaoFinal: initialVisita.decisaoFinal,
+      planoDeAcao: initialVisita.planoDeAcao,
+      prazo: initialVisita.prazo
+    };
+  });
   const [activeTab, setActiveTab] = useState<'geral' | 'financeiro' | 'planejamento'>('geral');
   
   // Inicializar form com visita existente, se houver
   useEffect(() => {
     if (visita) {
-      // Fix: Use explicit destructuring to avoid TypeScript errors
-      const { 
-        promotorId, lojaId, rotaId, periodo, quantVisitas, horasTotais, 
-        diasVisita, faturamentoMensal, custoPorPromotor, custoPorPromotorHora, 
-        custoPorLoja, mixIdeal, mixIdealPontos, produtoBonus, sugestaoVisitas, 
-        quantHoras, frequenciaNegociada, frequenciaSolicitada, justificativa, 
-        decisaoFinal, planoDeAcao, prazo 
-      } = visita;
-      
       setForm({
-        promotorId, lojaId, rotaId, periodo, quantVisitas, horasTotais, 
-        diasVisita, faturamentoMensal, custoPorPromotor, custoPorPromotorHora, 
-        custoPorLoja, mixIdeal, mixIdealPontos, produtoBonus, sugestaoVisitas, 
-        quantHoras, frequenciaNegociada, frequenciaSolicitada, justificativa, 
-        decisaoFinal, planoDeAcao, prazo
+        promotorId: visita.promotorId,
+        lojaId: visita.lojaId,
+        rotaId: visita.rotaId,
+        periodo: visita.periodo,
+        quantVisitas: visita.quantVisitas,
+        horasTotais: visita.horasTotais,
+        diasVisita: { ...visita.diasVisita },
+        faturamentoMensal: { ...visita.faturamentoMensal },
+        custoPorPromotor: visita.custoPorPromotor,
+        custoPorPromotorHora: visita.custoPorPromotorHora,
+        custoPorLoja: visita.custoPorLoja,
+        mixIdeal: visita.mixIdeal,
+        mixIdealPontos: visita.mixIdealPontos,
+        produtoBonus: visita.produtoBonus,
+        sugestaoVisitas: visita.sugestaoVisitas,
+        quantHoras: visita.quantHoras,
+        frequenciaNegociada: visita.frequenciaNegociada,
+        frequenciaSolicitada: visita.frequenciaSolicitada,
+        justificativa: visita.justificativa,
+        decisaoFinal: visita.decisaoFinal,
+        planoDeAcao: visita.planoDeAcao,
+        prazo: visita.prazo
       });
     }
   }, [visita]);
