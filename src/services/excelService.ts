@@ -1,57 +1,255 @@
 
 import * as XLSX from 'xlsx';
-import { Promotor, Rota, Loja, Visita, MesesAno } from '../types/types';
+import { Promotor, Loja, Rota, Visita, Agencia } from '../types/types';
 import * as storageService from './storageService';
 
-// Generic function to export data to Excel
-export const exportToExcel = (data: any[], fileName: string) => {
-  const worksheet = XLSX.utils.json_to_sheet(data);
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
-  XLSX.writeFile(workbook, `${fileName}.xlsx`);
-};
-
-// Export Functions for each entity
+// Export functions
 export const exportPromotores = () => {
   const promotores = storageService.getPromotores();
-  exportToExcel(promotores, 'promotores');
-};
-
-export const exportRotas = () => {
-  const rotas = storageService.getRotas();
-  exportToExcel(rotas, 'rotas');
+  const worksheet = XLSX.utils.json_to_sheet(promotores);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Promotores");
+  XLSX.writeFile(workbook, "promotores.xlsx");
 };
 
 export const exportLojas = () => {
   const lojas = storageService.getLojas();
-  exportToExcel(lojas, 'lojas');
+  const worksheet = XLSX.utils.json_to_sheet(lojas);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Lojas");
+  XLSX.writeFile(workbook, "lojas.xlsx");
 };
 
-// Export financial data
+export const exportRotas = () => {
+  const rotas = storageService.getRotas();
+  const worksheet = XLSX.utils.json_to_sheet(rotas);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Rotas");
+  XLSX.writeFile(workbook, "rotas.xlsx");
+};
+
+export const exportAgencias = () => {
+  const agencias = storageService.getAgencias();
+  const worksheet = XLSX.utils.json_to_sheet(agencias);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Agencias");
+  XLSX.writeFile(workbook, "agencias.xlsx");
+};
+
 export const exportFinanceiroMensal = () => {
   const visitas = storageService.getVisitas();
   const lojas = storageService.getLojas();
   
-  // Transform the data to the expected format
-  const financialData = visitas.flatMap(visita => {
-    const loja = lojas.find(l => l.id === visita.lojaId);
-    if (!loja) return [];
-    
-    return Object.entries(visita.faturamentoMensal).map(([mes, valor]) => ({
-      cnpj: loja.cnpj,
-      codigo: loja.id,
-      fantasia: loja.fantasia,
-      mes,
-      valor
-    }));
+  // Prepare data for export
+  const financeiroData = visitas.map(visita => {
+    const loja = lojas.find(l => l.id === visita.lojaId) || { cnpj: 'N/A', codigo: 'N/A', fantasia: 'N/A' };
+    return {
+      codigoLoja: loja.codigo,
+      cnpjLoja: loja.cnpj,
+      nomeLoja: loja.fantasia,
+      janeiro: visita.faturamentoMensal.janeiro,
+      fevereiro: visita.faturamentoMensal.fevereiro,
+      marco: visita.faturamentoMensal.marco,
+      abril: visita.faturamentoMensal.abril,
+      maio: visita.faturamentoMensal.maio,
+      junho: visita.faturamentoMensal.junho,
+      julho: visita.faturamentoMensal.julho,
+      agosto: visita.faturamentoMensal.agosto,
+      setembro: visita.faturamentoMensal.setembro,
+      outubro: visita.faturamentoMensal.outubro,
+      novembro: visita.faturamentoMensal.novembro,
+      dezembro: visita.faturamentoMensal.dezembro,
+    };
   });
-  
-  exportToExcel(financialData, 'financeiro_mensal');
+
+  const worksheet = XLSX.utils.json_to_sheet(financeiroData);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "FinanceiroMensal");
+  XLSX.writeFile(workbook, "financeiro_mensal.xlsx");
 };
 
-// Import Functions
-// Generic import function
-const importFromExcel = async (file: File): Promise<any[]> => {
+// Import functions
+export const importPromotores = async (file: File): Promise<string> => {
+  try {
+    const data = await readExcelFile(file);
+    if (data.length === 0) {
+      throw new Error("Arquivo vazio ou formato inválido.");
+    }
+    
+    data.forEach((row: any) => {
+      const promotor: Promotor = {
+        id: row.id || crypto.randomUUID(),
+        tipo: row.tipo || "PRÓPRIO",
+        codigo: row.codigo || "",
+        nome: row.nome || "",
+        agencia: row.agencia || "",
+        supervisor: row.supervisor || "",
+        gerencia: row.gerencia || ""
+      };
+      
+      if (storageService.getPromotorById(promotor.id)) {
+        storageService.updatePromotor(promotor);
+      } else {
+        storageService.addPromotor(promotor);
+      }
+    });
+    
+    return `Importados ${data.length} promotores com sucesso.`;
+  } catch (error) {
+    console.error("Erro na importação de promotores:", error);
+    throw error;
+  }
+};
+
+export const importLojas = async (file: File): Promise<string> => {
+  try {
+    const data = await readExcelFile(file);
+    if (data.length === 0) {
+      throw new Error("Arquivo vazio ou formato inválido.");
+    }
+    
+    data.forEach((row: any) => {
+      const loja: Loja = {
+        id: row.id || crypto.randomUUID(),
+        codigo: row.codigo || "",
+        cnpj: row.cnpj || "",
+        fantasia: row.fantasia || "",
+        regional: row.regional || "",
+        rede: row.rede || "",
+        status: row.status || "",
+        estado: row.estado || "",
+        tamanho: (row.tamanho as "P" | "M" | "G" | "CASH") || "M"
+      };
+      
+      if (storageService.getLojaById(loja.id)) {
+        storageService.updateLoja(loja);
+      } else {
+        storageService.addLoja(loja);
+      }
+    });
+    
+    return `Importadas ${data.length} lojas com sucesso.`;
+  } catch (error) {
+    console.error("Erro na importação de lojas:", error);
+    throw error;
+  }
+};
+
+export const importRotas = async (file: File): Promise<string> => {
+  try {
+    const data = await readExcelFile(file);
+    if (data.length === 0) {
+      throw new Error("Arquivo vazio ou formato inválido.");
+    }
+    
+    data.forEach((row: any) => {
+      const rota: Rota = {
+        id: row.id || crypto.randomUUID(),
+        codigo: row.codigo || "",
+        nome: row.nome || "",
+        qtdeCodigo: Number(row.qtdeCodigo) || 0,
+        qtdeLojas: Number(row.qtdeLojas) || 0,
+        responsavel: row.responsavel || "",
+        supervisor: row.supervisor || "",
+        gerente: row.gerente || ""
+      };
+      
+      if (storageService.getRotaById(rota.id)) {
+        storageService.updateRota(rota);
+      } else {
+        storageService.addRota(rota);
+      }
+    });
+    
+    return `Importadas ${data.length} rotas com sucesso.`;
+  } catch (error) {
+    console.error("Erro na importação de rotas:", error);
+    throw error;
+  }
+};
+
+export const importAgencias = async (file: File): Promise<string> => {
+  try {
+    const data = await readExcelFile(file);
+    if (data.length === 0) {
+      throw new Error("Arquivo vazio ou formato inválido.");
+    }
+    
+    data.forEach((row: any) => {
+      const agencia: Agencia = {
+        id: row.id || crypto.randomUUID(),
+        nome: row.nome || "",
+        contato: row.contato || "",
+        telefone: row.telefone || "",
+      };
+      
+      if (storageService.getAgenciaById(agencia.id)) {
+        storageService.updateAgencia(agencia);
+      } else {
+        storageService.addAgencia(agencia);
+      }
+    });
+    
+    return `Importadas ${data.length} agências com sucesso.`;
+  } catch (error) {
+    console.error("Erro na importação de agências:", error);
+    throw error;
+  }
+};
+
+export const importFinanceiroMensal = async (file: File): Promise<string> => {
+  try {
+    const data = await readExcelFile(file);
+    if (data.length === 0) {
+      throw new Error("Arquivo vazio ou formato inválido.");
+    }
+    
+    const visitas = storageService.getVisitas();
+    const lojas = storageService.getLojas();
+    let atualizadas = 0;
+    
+    data.forEach((row: any) => {
+      // Encontra a loja pelo código ou CNPJ
+      const loja = lojas.find(l => l.codigo === row.codigoLoja || l.cnpj === row.cnpjLoja);
+      
+      if (loja) {
+        // Encontra visitas relacionadas a esta loja
+        const visitasLoja = visitas.filter(v => v.lojaId === loja.id);
+        
+        visitasLoja.forEach(visita => {
+          const visitaAtualizada: Visita = {
+            ...visita,
+            faturamentoMensal: {
+              janeiro: Number(row.janeiro) || 0,
+              fevereiro: Number(row.fevereiro) || 0,
+              marco: Number(row.marco) || 0,
+              abril: Number(row.abril) || 0,
+              maio: Number(row.maio) || 0,
+              junho: Number(row.junho) || 0,
+              julho: Number(row.julho) || 0,
+              agosto: Number(row.agosto) || 0,
+              setembro: Number(row.setembro) || 0,
+              outubro: Number(row.outubro) || 0,
+              novembro: Number(row.novembro) || 0,
+              dezembro: Number(row.dezembro) || 0
+            }
+          };
+          
+          storageService.updateVisita(visitaAtualizada);
+          atualizadas++;
+        });
+      }
+    });
+    
+    return `Atualizadas informações financeiras de ${atualizadas} visitas.`;
+  } catch (error) {
+    console.error("Erro na importação de dados financeiros:", error);
+    throw error;
+  }
+};
+
+// Helper function to read Excel file
+const readExcelFile = async (file: File): Promise<any[]> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     
@@ -61,8 +259,8 @@ const importFromExcel = async (file: File): Promise<any[]> => {
         const workbook = XLSX.read(data, { type: 'binary' });
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet);
-        resolve(jsonData);
+        const json = XLSX.utils.sheet_to_json(worksheet);
+        resolve(json);
       } catch (error) {
         reject(error);
       }
@@ -71,153 +269,4 @@ const importFromExcel = async (file: File): Promise<any[]> => {
     reader.onerror = (error) => reject(error);
     reader.readAsBinaryString(file);
   });
-};
-
-// Import promotores from Excel
-export const importPromotores = async (file: File): Promise<string> => {
-  try {
-    const data = await importFromExcel(file);
-    const promotores = data.map(item => {
-      // Validate data
-      if (!item.nome || !item.codigo) {
-        throw new Error('Dados inválidos: nome e código são obrigatórios');
-      }
-      
-      return {
-        id: item.id || String(Date.now()),
-        tipo: item.tipo || "PRÓPRIO",
-        codigo: String(item.codigo),
-        nome: String(item.nome),
-        agencia: item.agencia || undefined,
-        supervisor: String(item.supervisor || ''),
-        gerencia: String(item.gerencia || '')
-      };
-    }) as Promotor[];
-    
-    // Replace existing promotores
-    storageService.savePromotores(promotores);
-    return `${promotores.length} promotores importados com sucesso.`;
-  } catch (error) {
-    console.error('Erro ao importar promotores:', error);
-    throw error;
-  }
-};
-
-// Import rotas from Excel
-export const importRotas = async (file: File): Promise<string> => {
-  try {
-    const data = await importFromExcel(file);
-    const rotas = data.map(item => {
-      // Validate data
-      if (!item.nome || !item.codigo) {
-        throw new Error('Dados inválidos: nome e código são obrigatórios');
-      }
-      
-      return {
-        id: item.id || String(Date.now()),
-        codigo: String(item.codigo),
-        nome: String(item.nome),
-        qtdeCodigo: Number(item.qtdeCodigo || 0),
-        qtdeLojas: Number(item.qtdeLojas || 0)
-      };
-    }) as Rota[];
-    
-    // Replace existing rotas
-    storageService.saveRotas(rotas);
-    return `${rotas.length} rotas importadas com sucesso.`;
-  } catch (error) {
-    console.error('Erro ao importar rotas:', error);
-    throw error;
-  }
-};
-
-// Import lojas from Excel
-export const importLojas = async (file: File): Promise<string> => {
-  try {
-    const data = await importFromExcel(file);
-    const lojas = data.map(item => {
-      // Validate data
-      if (!item.fantasia || !item.cnpj) {
-        throw new Error('Dados inválidos: fantasia e CNPJ são obrigatórios');
-      }
-      
-      return {
-        id: item.id || String(Date.now()),
-        cnpj: String(item.cnpj),
-        fantasia: String(item.fantasia),
-        regional: String(item.regional || ''),
-        rede: String(item.rede || ''),
-        status: String(item.status || ''),
-        estado: String(item.estado || ''),
-        tamanho: (item.tamanho as "P" | "M" | "G") || "M"
-      };
-    }) as Loja[];
-    
-    // Replace existing lojas
-    storageService.saveLojas(lojas);
-    return `${lojas.length} lojas importadas com sucesso.`;
-  } catch (error) {
-    console.error('Erro ao importar lojas:', error);
-    throw error;
-  }
-};
-
-// Import financial data
-export const importFinanceiroMensal = async (file: File): Promise<string> => {
-  try {
-    const data = await importFromExcel(file);
-    const visitas = storageService.getVisitas();
-    const lojas = storageService.getLojas();
-    let updatedCount = 0;
-    
-    // Process each row from the Excel file
-    data.forEach(item => {
-      // Validar dados
-      if (!item.cnpj || !item.mes || item.valor === undefined) {
-        console.warn('Dados financeiros inválidos, pulando linha:', item);
-        return;
-      }
-      
-      // Find the loja by CNPJ
-      const loja = lojas.find(l => l.cnpj === item.cnpj);
-      if (!loja) {
-        console.warn(`Loja com CNPJ ${item.cnpj} não encontrada, pulando linha`);
-        return;
-      }
-      
-      // Find visits associated with this loja
-      const lojasVisitas = visitas.filter(v => v.lojaId === loja.id);
-      if (lojasVisitas.length === 0) {
-        console.warn(`Nenhuma visita encontrada para a loja ${loja.fantasia}, pulando linha`);
-        return;
-      }
-      
-      // Update each visit with the new financial data
-      lojasVisitas.forEach(visita => {
-        // Make sure the month is valid
-        const mes = item.mes.toLowerCase() as MesesAno;
-        if (!Object.keys(visita.faturamentoMensal).includes(mes)) {
-          console.warn(`Mês inválido: ${item.mes}, pulando linha`);
-          return;
-        }
-        
-        // Update the financial data for this month
-        const updatedVisita = {
-          ...visita,
-          faturamentoMensal: {
-            ...visita.faturamentoMensal,
-            [mes]: Number(item.valor)
-          }
-        };
-        
-        storageService.updateVisita(updatedVisita);
-        updatedCount++;
-      });
-    });
-    
-    return `Dados financeiros atualizados para ${updatedCount} visitas.`;
-  } catch (error) {
-    console.error('Erro ao importar dados financeiros:', error);
-    throw error;
-  }
 };

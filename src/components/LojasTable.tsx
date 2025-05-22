@@ -17,6 +17,7 @@ const LojasTable: React.FC<LojasTableProps> = ({ onEdit }) => {
       <table className="min-w-full bg-white border border-gray-300">
         <thead className="bg-gray-50">
           <tr>
+            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Código</th>
             <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CNPJ</th>
             <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fantasia</th>
             <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Regional</th>
@@ -30,13 +31,14 @@ const LojasTable: React.FC<LojasTableProps> = ({ onEdit }) => {
         <tbody className="divide-y divide-gray-300">
           {lojas.length === 0 ? (
             <tr>
-              <td colSpan={8} className="px-4 py-2 text-center text-gray-500">
+              <td colSpan={9} className="px-4 py-2 text-center text-gray-500">
                 Nenhuma loja cadastrada.
               </td>
             </tr>
           ) : (
             lojas.map((loja) => (
               <tr key={loja.id} className="hover:bg-gray-50">
+                <td className="px-4 py-2">{loja.codigo}</td>
                 <td className="px-4 py-2">{loja.cnpj}</td>
                 <td className="px-4 py-2">{loja.fantasia}</td>
                 <td className="px-4 py-2">{loja.regional}</td>
@@ -46,7 +48,8 @@ const LojasTable: React.FC<LojasTableProps> = ({ onEdit }) => {
                 <td className="px-4 py-2">{
                   loja.tamanho === 'P' ? 'Pequeno' :
                   loja.tamanho === 'M' ? 'Médio' :
-                  loja.tamanho === 'G' ? 'Grande' : loja.tamanho
+                  loja.tamanho === 'G' ? 'Grande' : 
+                  loja.tamanho === 'CASH' ? 'CASH' : loja.tamanho
                 }</td>
                 <td className="px-4 py-2">
                   <div className="flex space-x-2">

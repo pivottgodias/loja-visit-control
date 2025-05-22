@@ -3,7 +3,7 @@ import React from 'react';
 import { useAppContext } from '../contexts/AppContext';
 import { Visita, DiasSemana } from '../types/types';
 import { Button } from '@/components/ui/button';
-import { Edit, Trash2, Check, X } from 'lucide-react';
+import { Edit, Trash2 } from 'lucide-react';
 
 interface VisitasTableProps {
   onEdit: (visita: Visita) => void;
@@ -68,6 +68,7 @@ const VisitasTable: React.FC<VisitasTableProps> = ({ onEdit }) => {
             <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Promotor</th>
             <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Loja</th>
             <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rota</th>
+            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
             <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Período</th>
             <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dias</th>
             <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Visitas</th>
@@ -78,7 +79,7 @@ const VisitasTable: React.FC<VisitasTableProps> = ({ onEdit }) => {
         <tbody className="divide-y divide-gray-300">
           {visitas.length === 0 ? (
             <tr>
-              <td colSpan={8} className="px-4 py-2 text-center text-gray-500">
+              <td colSpan={9} className="px-4 py-2 text-center text-gray-500">
                 Nenhuma visita cadastrada.
               </td>
             </tr>
@@ -88,6 +89,7 @@ const VisitasTable: React.FC<VisitasTableProps> = ({ onEdit }) => {
                 <td className="px-4 py-2">{getPromotorNome(visita.promotorId)}</td>
                 <td className="px-4 py-2">{getLojaNome(visita.lojaId)}</td>
                 <td className="px-4 py-2">{getRotaNome(visita.rotaId)}</td>
+                <td className="px-4 py-2">{visita.tipoAtendimento || 'PRÓPRIO'}</td>
                 <td className="px-4 py-2">{visita.periodo}</td>
                 <td className="px-4 py-2">{renderDiasVisita(visita.diasVisita)}</td>
                 <td className="px-4 py-2 text-center">{visita.quantVisitas}</td>

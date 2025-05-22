@@ -17,6 +17,9 @@ const initialRota: Omit<Rota, 'id'> = {
   nome: '',
   qtdeCodigo: 0,
   qtdeLojas: 0,
+  responsavel: '',
+  supervisor: '',
+  gerente: '',
 };
 
 const RotaForm: React.FC<RotaFormProps> = ({ rota, onClose }) => {
@@ -25,9 +28,16 @@ const RotaForm: React.FC<RotaFormProps> = ({ rota, onClose }) => {
 
   useEffect(() => {
     if (rota) {
-      // Use spread on object with explicit type to avoid TypeScript errors
-      const { id, ...rotaData } = rota;
-      setForm(rotaData);
+      // Use explicit property assignment to avoid TypeScript issues
+      setForm({
+        codigo: rota.codigo,
+        nome: rota.nome,
+        qtdeCodigo: rota.qtdeCodigo,
+        qtdeLojas: rota.qtdeLojas,
+        responsavel: rota.responsavel || '',
+        supervisor: rota.supervisor || '',
+        gerente: rota.gerente || ''
+      });
     }
   }, [rota]);
 
@@ -104,6 +114,27 @@ const RotaForm: React.FC<RotaFormProps> = ({ rota, onClose }) => {
           name="qtdeLojas"
           type="number"
           value={form.qtdeLojas}
+          onChange={handleChange}
+        />
+        
+        <FormField
+          label="Responsável"
+          name="responsavel"
+          value={form.responsavel}
+          onChange={handleChange}
+        />
+        
+        <FormField
+          label="Supervisor"
+          name="supervisor"
+          value={form.supervisor}
+          onChange={handleChange}
+        />
+        
+        <FormField
+          label="Gerente"
+          name="gerente"
+          value={form.gerente}
           onChange={handleChange}
         />
       </div>

@@ -1,6 +1,6 @@
 
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { Promotor, Rota, Loja, Visita } from '../types/types';
+import { Promotor, Rota, Loja, Visita, Agencia } from '../types/types';
 import * as storageService from '../services/storageService';
 
 interface AppContextType {
@@ -8,6 +8,7 @@ interface AppContextType {
   rotas: Rota[];
   lojas: Loja[];
   visitas: Visita[];
+  agencias: Agencia[];
   addPromotor: (promotor: Promotor) => void;
   updatePromotor: (promotor: Promotor) => void;
   deletePromotor: (id: string) => void;
@@ -20,6 +21,9 @@ interface AppContextType {
   addVisita: (visita: Visita) => void;
   updateVisita: (visita: Visita) => void;
   deleteVisita: (id: string) => void;
+  addAgencia: (agencia: Agencia) => void;
+  updateAgencia: (agencia: Agencia) => void;
+  deleteAgencia: (id: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -29,6 +33,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [rotas, setRotas] = useState<Rota[]>([]);
   const [lojas, setLojas] = useState<Loja[]>([]);
   const [visitas, setVisitas] = useState<Visita[]>([]);
+  const [agencias, setAgencias] = useState<Agencia[]>([]);
 
   // Inicializar dados do localStorage
   useEffect(() => {
@@ -38,6 +43,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setRotas(storageService.getRotas());
       setLojas(storageService.getLojas());
       setVisitas(storageService.getVisitas());
+      setAgencias(storageService.getAgencias());
     };
     
     loadData();
@@ -110,6 +116,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setVisitas(storageService.getVisitas());
   };
 
+  const addAgencia = (agencia: Agencia) => {
+    storageService.addAgencia(agencia);
+    setAgencias(storageService.getAgencias());
+  };
+
+  const updateAgencia = (agencia: Agencia) => {
+    storageService.updateAgencia(agencia);
+    setAgencias(storageService.getAgencias());
+  };
+
+  const deleteAgencia = (id: string) => {
+    storageService.deleteAgencia(id);
+    setAgencias(storageService.getAgencias());
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -117,6 +138,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         rotas,
         lojas,
         visitas,
+        agencias,
         addPromotor,
         updatePromotor,
         deletePromotor,
@@ -129,6 +151,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         addVisita,
         updateVisita,
         deleteVisita,
+        addAgencia,
+        updateAgencia,
+        deleteAgencia,
       }}
     >
       {children}

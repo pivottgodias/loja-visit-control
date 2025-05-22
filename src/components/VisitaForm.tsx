@@ -5,7 +5,7 @@ import { useAppContext } from '../contexts/AppContext';
 import { toast } from '@/components/ui/sonner';
 import { v4 as uuidv4 } from 'uuid';
 
-// Import the new components
+// Import the form components
 import FormHeader from './visita-form/FormHeader';
 import TabNav from './visita-form/TabNav';
 import DadosGeraisSection from './visita-form/DadosGeraisSection';
@@ -23,6 +23,7 @@ const initialVisita = {
   promotorId: '',
   lojaId: '',
   rotaId: '',
+  tipoAtendimento: 'PRÓPRIO' as 'PRÓPRIO' | 'TERCEIRO' | 'MISTO',
   periodo: '',
   quantVisitas: 0,
   horasTotais: 0,
@@ -74,6 +75,7 @@ const VisitaForm: React.FC<VisitaFormProps> = ({ visita, onClose }) => {
       promotorId: initialVisita.promotorId,
       lojaId: initialVisita.lojaId,
       rotaId: initialVisita.rotaId,
+      tipoAtendimento: initialVisita.tipoAtendimento,
       periodo: initialVisita.periodo,
       quantVisitas: initialVisita.quantVisitas,
       horasTotais: initialVisita.horasTotais,
@@ -126,6 +128,7 @@ const VisitaForm: React.FC<VisitaFormProps> = ({ visita, onClose }) => {
         promotorId: visita.promotorId,
         lojaId: visita.lojaId,
         rotaId: visita.rotaId,
+        tipoAtendimento: visita.tipoAtendimento || 'PRÓPRIO',
         periodo: visita.periodo,
         quantVisitas: visita.quantVisitas,
         horasTotais: visita.horasTotais,

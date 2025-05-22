@@ -19,6 +19,9 @@ const RotasTable: React.FC<RotasTableProps> = ({ onEdit }) => {
           <tr>
             <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Código</th>
             <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
+            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Responsável</th>
+            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supervisor</th>
+            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gerente</th>
             <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Qtd Códigos</th>
             <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Qtd Lojas</th>
             <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
@@ -27,7 +30,7 @@ const RotasTable: React.FC<RotasTableProps> = ({ onEdit }) => {
         <tbody className="divide-y divide-gray-300">
           {rotas.length === 0 ? (
             <tr>
-              <td colSpan={5} className="px-4 py-2 text-center text-gray-500">
+              <td colSpan={8} className="px-4 py-2 text-center text-gray-500">
                 Nenhuma rota cadastrada.
               </td>
             </tr>
@@ -36,6 +39,9 @@ const RotasTable: React.FC<RotasTableProps> = ({ onEdit }) => {
               <tr key={rota.id} className="hover:bg-gray-50">
                 <td className="px-4 py-2">{rota.codigo}</td>
                 <td className="px-4 py-2">{rota.nome}</td>
+                <td className="px-4 py-2">{rota.responsavel || '-'}</td>
+                <td className="px-4 py-2">{rota.supervisor || '-'}</td>
+                <td className="px-4 py-2">{rota.gerente || '-'}</td>
                 <td className="px-4 py-2">{rota.qtdeCodigo}</td>
                 <td className="px-4 py-2">{rota.qtdeLojas}</td>
                 <td className="px-4 py-2">

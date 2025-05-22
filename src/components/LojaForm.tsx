@@ -13,6 +13,7 @@ interface LojaFormProps {
 }
 
 const initialLoja: Omit<Loja, 'id'> = {
+  codigo: '',
   cnpj: '',
   fantasia: '',
   regional: '',
@@ -35,8 +36,16 @@ const LojaForm: React.FC<LojaFormProps> = ({ loja, onClose }) => {
   useEffect(() => {
     if (loja) {
       // Use spread on object with explicit type to avoid TypeScript errors
-      const { id, ...lojaData } = loja;
-      setForm(lojaData);
+      setForm({
+        codigo: loja.codigo,
+        cnpj: loja.cnpj,
+        fantasia: loja.fantasia,
+        regional: loja.regional,
+        rede: loja.rede,
+        status: loja.status,
+        estado: loja.estado,
+        tamanho: loja.tamanho
+      });
     }
   }, [loja]);
 
@@ -51,7 +60,7 @@ const LojaForm: React.FC<LojaFormProps> = ({ loja, onClose }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      if (!form.cnpj || !form.fantasia) {
+      if (!form.codigo || !form.cnpj || !form.fantasia) {
         toast.error('Por favor, preencha todos os campos obrigatórios');
         return;
       }
@@ -84,6 +93,14 @@ const LojaForm: React.FC<LojaFormProps> = ({ loja, onClose }) => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <FormField
+          label="Código"
+          name="codigo"
+          value={form.codigo}
+          onChange={handleChange}
+          required
+        />
+
         <FormField
           label="CNPJ"
           name="cnpj"
@@ -139,7 +156,8 @@ const LojaForm: React.FC<LojaFormProps> = ({ loja, onClose }) => {
           options={[
             { value: 'P', label: 'Pequeno' },
             { value: 'M', label: 'Médio' },
-            { value: 'G', label: 'Grande' }
+            { value: 'G', label: 'Grande' },
+            { value: 'CASH', label: 'CASH' }
           ]}
         />
       </div>

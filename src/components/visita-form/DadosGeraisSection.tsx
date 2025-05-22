@@ -1,128 +1,114 @@
 
 import React from 'react';
+import { Visita, Promotor, Loja, Rota } from '../../types/types';
 import FormField from '../FormField';
-import { DiasSemana } from '@/types/types';
 
 interface DadosGeraisSectionProps {
-  form: {
-    promotorId: string;
-    lojaId: string;
-    rotaId: string;
-    periodo: string;
-    quantVisitas: number;
-    horasTotais: number;
-    diasVisita: Record<DiasSemana, boolean>;
-  };
+  form: Omit<Visita, 'id'>;
   handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
-  promotores: { id: string; nome: string; tipo: string; codigo: string }[];
-  lojas: { id: string; fantasia: string; regional: string }[];
-  rotas: { id: string; nome: string; codigo: string }[];
+  promotores: Promotor[];
+  lojas: Loja[];
+  rotas: Rota[];
 }
 
-const diasSemanaLabels: Record<DiasSemana, string> = {
-  segunda: 'Segunda-Feira',
-  terca: 'Terça-Feira',
-  quarta: 'Quarta-Feira',
-  quinta: 'Quinta-Feira',
-  sexta: 'Sexta-Feira',
-  sabado: 'Sábado',
-};
-
-const DadosGeraisSection: React.FC<DadosGeraisSectionProps> = ({
-  form,
-  handleChange,
-  promotores,
-  lojas,
-  rotas
+const DadosGeraisSection: React.FC<DadosGeraisSectionProps> = ({ 
+  form, handleChange, promotores, lojas, rotas 
 }) => {
   return (
-    <div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormField
-          label="Promotor"
-          name="promotorId"
-          type="select"
-          value={form.promotorId}
-          onChange={handleChange}
-          options={promotores.map(promotor => ({
-            value: promotor.id,
-            label: `${promotor.nome} (${promotor.tipo}: ${promotor.codigo})`
-          }))}
-          required
-        />
-        
-        <FormField
-          label="Loja"
-          name="lojaId"
-          type="select"
-          value={form.lojaId}
-          onChange={handleChange}
-          options={lojas.map(loja => ({
-            value: loja.id,
-            label: `${loja.fantasia} (${loja.regional})`
-          }))}
-          required
-        />
-        
-        <FormField
-          label="Rota"
-          name="rotaId"
-          type="select"
-          value={form.rotaId}
-          onChange={handleChange}
-          options={rotas.map(rota => ({
-            value: rota.id,
-            label: `${rota.nome} (${rota.codigo})`
-          }))}
-          required
-        />
-        
-        <FormField
-          label="Período"
-          name="periodo"
-          type="select"
-          value={form.periodo}
-          onChange={handleChange}
-          options={[
-            { value: 'Diário', label: 'Diário' },
-            { value: 'Semanal', label: 'Semanal' },
-            { value: 'Quinzenal', label: 'Quinzenal' },
-            { value: 'Mensal', label: 'Mensal' }
-          ]}
-        />
-        
-        <FormField
-          label="Quantidade de Visitas"
-          name="quantVisitas"
-          type="number"
-          value={form.quantVisitas}
-          onChange={handleChange}
-        />
-        
-        <FormField
-          label="Horas Totais"
-          name="horasTotais"
-          type="number"
-          value={form.horasTotais}
-          onChange={handleChange}
-        />
-      </div>
+    <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+      <FormField
+        label="Promotor"
+        name="promotorId"
+        type="select"
+        value={form.promotorId}
+        onChange={handleChange}
+        required
+        options={promotores.map(promotor => ({ 
+          value: promotor.id, 
+          label: `${promotor.nome} (${promotor.codigo})` 
+        }))}
+      />
       
-      <div className="mt-4">
-        <h3 className="font-medium mb-2">Dias de Visita</h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {Object.entries(diasSemanaLabels).map(([dia, label]) => (
-            <div key={dia} className="flex items-center space-x-2">
+      <FormField
+        label="Loja"
+        name="lojaId"
+        type="select"
+        value={form.lojaId}
+        onChange={handleChange}
+        required
+        options={lojas.map(loja => ({ 
+          value: loja.id, 
+          label: loja.fantasia 
+        }))}
+      />
+      
+      <FormField
+        label="Rota"
+        name="rotaId"
+        type="select"
+        value={form.rotaId}
+        onChange={handleChange}
+        required
+        options={rotas.map(rota => ({ 
+          value: rota.id, 
+          label: rota.nome
+        }))}
+      />
+      
+      <FormField
+        label="Tipo de Atendimento"
+        name="tipoAtendimento"
+        type="select"
+        value={form.tipoAtendimento}
+        onChange={handleChange}
+        required
+        options={[
+          { value: 'PRÓPRIO', label: 'PRÓPRIO' },
+          { value: 'TERCEIRO', label: 'TERCEIRO' },
+          { value: 'MISTO', label: 'MISTO' }
+        ]}
+      />
+
+      <FormField
+        label="Período"
+        name="periodo"
+        value={form.periodo}
+        onChange={handleChange}
+      />
+      
+      <FormField
+        label="Quantidade de Visitas"
+        name="quantVisitas"
+        type="number"
+        value={form.quantVisitas}
+        onChange={handleChange}
+      />
+      
+      <FormField
+        label="Total de Horas"
+        name="horasTotais"
+        type="number"
+        value={form.horasTotais}
+        onChange={handleChange}
+      />
+      
+      <div className="md:col-span-2">
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Dias de Visita
+        </label>
+        <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+          {Object.keys(form.diasVisita).map((dia) => (
+            <div key={dia} className="flex items-center">
               <input
                 type="checkbox"
                 id={`diasVisita.${dia}`}
                 name={`diasVisita.${dia}`}
-                checked={form.diasVisita[dia as DiasSemana]}
+                checked={form.diasVisita[dia as keyof typeof form.diasVisita]}
                 onChange={handleChange}
-                className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
               />
-              <label htmlFor={`diasVisita.${dia}`} className="text-sm text-gray-700">
-                {label}
+              <label htmlFor={`diasVisita.${dia}`} className="ml-2 text-sm text-gray-700 capitalize">
+                {dia}
               </label>
             </div>
           ))}

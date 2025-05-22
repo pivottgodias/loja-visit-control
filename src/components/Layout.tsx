@@ -2,14 +2,15 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { Home, Users, MapPin, Map } from 'lucide-react';
+import { Home, Users, MapPin, Map, Building } from 'lucide-react';
 
 const navItems = [
-  { name: 'Início', path: '/', icon: Home },
+  { name: 'Dashboard', path: '/', icon: Home },
   { name: 'Visitas', path: '/visitas', icon: MapPin },
   { name: 'Promotores', path: '/promotores', icon: Users },
   { name: 'Lojas', path: '/lojas', icon: Map },
   { name: 'Rotas', path: '/rotas', icon: Map },
+  { name: 'Agências', path: '/agencias', icon: Building },
 ];
 
 interface LayoutProps {

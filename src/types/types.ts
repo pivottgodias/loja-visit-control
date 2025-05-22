@@ -15,17 +15,28 @@ export interface Rota {
   nome: string;
   qtdeCodigo: number;
   qtdeLojas: number;
+  responsavel?: string;
+  supervisor?: string;
+  gerente?: string;
 }
 
 export interface Loja {
   id: string;
+  codigo: string;
   cnpj: string;
   fantasia: string;
   regional: string;
   rede: string;
   status: string;
   estado: string;
-  tamanho: "P" | "M" | "G";
+  tamanho: "P" | "M" | "G" | "CASH";
+}
+
+export interface Agencia {
+  id: string;
+  nome: string;
+  contato: string;
+  telefone: string;
 }
 
 export interface Visita {
@@ -33,6 +44,7 @@ export interface Visita {
   promotorId: string;
   lojaId: string;
   rotaId: string;
+  tipoAtendimento: "PRÓPRIO" | "TERCEIRO" | "MISTO";
   periodo: string;
   quantVisitas: number;
   horasTotais: number;
