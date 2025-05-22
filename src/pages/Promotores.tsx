@@ -14,6 +14,12 @@ const Promotores = () => {
   const [selectedPromotor, setSelectedPromotor] = useState<Promotor | undefined>(undefined);
 
   const handleEdit = (promotor: Promotor) => {
+    // Only allow editing PRÓPRIOS
+    if (promotor.tipo !== "PRÓPRIO") {
+      toast.error("Apenas promotores próprios podem ser editados nesta seção.");
+      return;
+    }
+    
     setSelectedPromotor(promotor);
     setIsFormOpen(true);
   };
@@ -87,11 +93,12 @@ const Promotores = () => {
         </div>
       </div>
       
-      <PromotoresTable onEdit={handleEdit} />
+      {/* Modified to only show PRÓPRIOS promoters */}
+      <PromotoresTable onEdit={handleEdit} filterTipo="PRÓPRIO" />
       
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
         <DialogContent>
-          <PromotorForm promotor={selectedPromotor} onClose={handleClose} />
+          <PromotorForm promotor={selectedPromotor} onClose={handleClose} onlyProprio={true} />
         </DialogContent>
       </Dialog>
     </div>

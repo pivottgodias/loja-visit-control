@@ -19,12 +19,18 @@ const diasSemanaIniciais: Record<DiasSemana, string> = {
 };
 
 const VisitasTable: React.FC<VisitasTableProps> = ({ onEdit }) => {
-  const { visitas, promotores, lojas, rotas, deleteVisita } = useAppContext();
+  const { visitas, promotores, lojas, rotas, agencias, deleteVisita } = useAppContext();
 
   // Funções auxiliares para obter nomes a partir de IDs
   const getPromotorNome = (id: string) => {
     const promotor = promotores.find(p => p.id === id);
     return promotor ? `${promotor.nome} (${promotor.codigo})` : 'Desconhecido';
+  };
+
+  const getAgenciaNome = (id: string) => {
+    if (!id) return ''; 
+    const agencia = agencias?.find(a => a.id === id);
+    return agencia ? agencia.nome : 'Desconhecida';
   };
 
   const getLojaNome = (id: string) => {
@@ -42,14 +48,14 @@ const VisitasTable: React.FC<VisitasTableProps> = ({ onEdit }) => {
     return Object.values(visita.faturamentoMensal).reduce((sum, val) => sum + val, 0);
   };
 
-  const renderDiasVisita = (diasVisita: Record<DiasSemana, boolean>) => {
+  const renderDiasVisita = (diasVisita: Record<DiasSemana, boolean>, colorClass: string = "bg-green-500") => {
     return (
       <div className="flex space-x-1">
         {(Object.entries(diasVisita) as [DiasSemana, boolean][]).map(([dia, checked]) => (
           <span 
             key={dia} 
             className={`inline-block w-6 h-6 rounded-full text-xs flex items-center justify-center ${
-              checked ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-500'
+              checked ? `${colorClass} text-white` : 'bg-gray-200 text-gray-500'
             }`}
             title={dia.charAt(0).toUpperCase() + dia.slice(1)}
           >
@@ -65,12 +71,15 @@ const VisitasTable: React.FC<VisitasTableProps> = ({ onEdit }) => {
       <table className="min-w-full bg-white border border-gray-300">
         <thead className="bg-gray-50">
           <tr>
-            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Promotor</th>
+            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
+            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Promotor/Agência</th>
             <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Loja</th>
             <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rota</th>
-            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
-            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Período</th>
-            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dias</th>
+            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dias (Próprio)</th>
+            {/* Only show terceiro days column if we have any misto atendimento */}
+            {visitas.some(v => v.tipoAtendimento === "MISTO") && (
+              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dias (Terceiro)</th>
+            )}
             <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Visitas</th>
             <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Faturamento Total</th>
             <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
@@ -79,19 +88,37 @@ const VisitasTable: React.FC<VisitasTableProps> = ({ onEdit }) => {
         <tbody className="divide-y divide-gray-300">
           {visitas.length === 0 ? (
             <tr>
-              <td colSpan={9} className="px-4 py-2 text-center text-gray-500">
+              <td colSpan={visitas.some(v => v.tipoAtendimento === "MISTO") ? 9 : 8} className="px-4 py-2 text-center text-gray-500">
                 Nenhuma visita cadastrada.
               </td>
             </tr>
           ) : (
             visitas.map((visita) => (
               <tr key={visita.id} className="hover:bg-gray-50">
-                <td className="px-4 py-2">{getPromotorNome(visita.promotorId)}</td>
+                <td className="px-4 py-2">{visita.tipoAtendimento}</td>
+                <td className="px-4 py-2">
+                  {visita.tipoAtendimento === "PRÓPRIO" && getPromotorNome(visita.promotorId)}
+                  {visita.tipoAtendimento === "TERCEIRO" && getAgenciaNome(visita.agenciaId || '')}
+                  {visita.tipoAtendimento === "MISTO" && (
+                    <>
+                      <div>{getPromotorNome(visita.promotorId)}</div>
+                      <div className="text-sm text-gray-500">{getAgenciaNome(visita.agenciaId || '')}</div>
+                    </>
+                  )}
+                </td>
                 <td className="px-4 py-2">{getLojaNome(visita.lojaId)}</td>
                 <td className="px-4 py-2">{getRotaNome(visita.rotaId)}</td>
-                <td className="px-4 py-2">{visita.tipoAtendimento || 'PRÓPRIO'}</td>
-                <td className="px-4 py-2">{visita.periodo}</td>
-                <td className="px-4 py-2">{renderDiasVisita(visita.diasVisita)}</td>
+                <td className="px-4 py-2">
+                  {renderDiasVisita(visita.diasVisita, "bg-green-500")}
+                </td>
+                {/* Show terceiro days if at least one visita is MISTO */}
+                {visitas.some(v => v.tipoAtendimento === "MISTO") && (
+                  <td className="px-4 py-2">
+                    {visita.tipoAtendimento === "MISTO" && visita.diasVisitaTerceiro 
+                      ? renderDiasVisita(visita.diasVisitaTerceiro, "bg-blue-500") 
+                      : <div className="h-6"></div>}
+                  </td>
+                )}
                 <td className="px-4 py-2 text-center">{visita.quantVisitas}</td>
                 <td className="px-4 py-2">
                   {calcularTotalFaturamento(visita).toLocaleString('pt-BR', {

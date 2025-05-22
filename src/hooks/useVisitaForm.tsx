@@ -8,13 +8,21 @@ import { toast } from '@/components/ui/sonner';
 // Define initial state directly as an object
 export const initialVisita: Omit<Visita, 'id'> = {
   promotorId: '',
+  agenciaId: '',
   lojaId: '',
   rotaId: '',
   tipoAtendimento: 'PRÓPRIO',
-  periodo: '',
   quantVisitas: 0,
   horasTotais: 0,
   diasVisita: {
+    segunda: false,
+    terca: false,
+    quarta: false,
+    quinta: false,
+    sexta: false,
+    sabado: false,
+  },
+  diasVisitaTerceiro: {
     segunda: false,
     terca: false,
     quarta: false,
@@ -58,7 +66,7 @@ interface UseVisitaFormProps {
 }
 
 export function useVisitaForm({ visita, onClose }: UseVisitaFormProps) {
-  const { promotores, lojas, rotas, addVisita, updateVisita } = useAppContext();
+  const { promotores, lojas, rotas, agencias, addVisita, updateVisita } = useAppContext();
   
   // Initialize form with a deep copy of initialVisita
   const [form, setForm] = useState<Omit<Visita, 'id'>>({ ...initialVisita });
@@ -69,11 +77,11 @@ export function useVisitaForm({ visita, onClose }: UseVisitaFormProps) {
     if (visita) {
       // Explicitly create a new object with properties copied from visita
       setForm({
-        promotorId: visita.promotorId,
+        promotorId: visita.promotorId || '',
+        agenciaId: visita.agenciaId || '',
         lojaId: visita.lojaId,
         rotaId: visita.rotaId,
         tipoAtendimento: visita.tipoAtendimento,
-        periodo: visita.periodo,
         quantVisitas: visita.quantVisitas,
         horasTotais: visita.horasTotais,
         diasVisita: {
@@ -83,6 +91,14 @@ export function useVisitaForm({ visita, onClose }: UseVisitaFormProps) {
           quinta: visita.diasVisita.quinta,
           sexta: visita.diasVisita.sexta,
           sabado: visita.diasVisita.sabado,
+        },
+        diasVisitaTerceiro: visita.diasVisitaTerceiro || {
+          segunda: false,
+          terca: false,
+          quarta: false,
+          quinta: false,
+          sexta: false,
+          sabado: false,
         },
         faturamentoMensal: {
           janeiro: visita.faturamentoMensal.janeiro,
@@ -116,26 +132,51 @@ export function useVisitaForm({ visita, onClose }: UseVisitaFormProps) {
     }
   }, [visita]);
 
-  // Apply store classification when loja changes
+  // Apply store classification and hours based on size when loja changes
   useEffect(() => {
     if (form.lojaId) {
       const loja = lojas.find(l => l.id === form.lojaId);
       
-      if (loja && loja.pontuacaoFinal && loja.diasVisitaSugeridos) {
+      if (loja) {
+        let horasPorVisita = 1; // Default for P or M
+        
+        if (loja.tamanho === 'G') {
+          horasPorVisita = 1.5;
+        } else if (loja.tamanho === 'CASH') {
+          horasPorVisita = 2;
+        }
+        
         setForm(prev => ({
           ...prev,
           // Apply recommended visit days if available
           diasVisita: loja.diasVisitaSugeridos || prev.diasVisita,
-          // Apply recommended hours if available
-          quantHoras: loja.horasFrequencia || prev.quantHoras,
-          // Calculate how many visits per week based on selected days
-          quantVisitas: Object.values(loja.diasVisitaSugeridos).filter(Boolean).length,
-          // Update the total hours
-          horasTotais: (loja.horasFrequencia || 0) * Object.values(loja.diasVisitaSugeridos).filter(Boolean).length,
+          // Apply hours based on store size
+          quantHoras: horasPorVisita,
+          // Calculate total hours
+          horasTotais: horasPorVisita * prev.quantVisitas,
         }));
       }
     }
   }, [form.lojaId, lojas]);
+
+  // Handle changing the tipo de atendimento
+  const handleTipoAtendimentoChange = (tipo: "PRÓPRIO" | "TERCEIRO" | "MISTO") => {
+    setForm(prev => {
+      // Reset IDs based on new type
+      const newForm = {
+        ...prev,
+        tipoAtendimento: tipo,
+      };
+      
+      if (tipo === "PRÓPRIO") {
+        newForm.agenciaId = '';
+      } else if (tipo === "TERCEIRO") {
+        newForm.promotorId = '';
+      }
+      
+      return newForm;
+    });
+  };
   
   // Handle form field changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -145,25 +186,28 @@ export function useVisitaForm({ visita, onClose }: UseVisitaFormProps) {
     if (name.includes('.')) {
       const [parent, child] = name.split('.');
       
-      if (parent === 'diasVisita') {
-        setForm(prev => ({
-          ...prev,
-          diasVisita: {
-            ...prev.diasVisita,
+      if (parent === 'diasVisita' || parent === 'diasVisitaTerceiro') {
+        setForm(prev => {
+          // Update the specific days object
+          const updatedDays = {
+            ...prev[parent as 'diasVisita' | 'diasVisitaTerceiro'],
             [child]: (e.target as HTMLInputElement).checked
-          },
-          // Update quantVisitas when changing days
-          quantVisitas: Object.values({
-            ...prev.diasVisita,
-            [child]: (e.target as HTMLInputElement).checked
-          }).filter(Boolean).length
-        }));
-        
-        // Update horasTotais when changing dias
-        setForm(prev => ({
-          ...prev,
-          horasTotais: prev.quantHoras * prev.quantVisitas
-        }));
+          };
+          
+          // Count total checked days across both sets of days
+          const totalVisitDays = Object.values(parent === 'diasVisita' ? updatedDays : prev.diasVisita).filter(Boolean).length +
+                                Object.values(parent === 'diasVisitaTerceiro' ? updatedDays : (prev.diasVisitaTerceiro || {})).filter(Boolean).length;
+          
+          // Calculate new total hours based on visit count and hours per visit
+          const horasTotais = prev.quantHoras * Math.min(totalVisitDays, 7);
+          
+          return {
+            ...prev,
+            [parent]: updatedDays,
+            quantVisitas: Math.min(totalVisitDays, 7), // Limit to 7
+            horasTotais
+          };
+        });
       } else if (parent === 'faturamentoMensal') {
         setForm(prev => ({
           ...prev,
@@ -194,9 +238,19 @@ export function useVisitaForm({ visita, onClose }: UseVisitaFormProps) {
           : type === 'number' ? Number(value) : value;
           
         // Update horasTotais when changing quantHoras or quantVisitas
-        if (name === 'quantHoras' || name === 'quantVisitas') {
-          newState.horasTotais = (name === 'quantHoras' ? Number(value) : prev.quantHoras) * 
-                               (name === 'quantVisitas' ? Number(value) : prev.quantVisitas);
+        if (name === 'quantHoras') {
+          // Make sure to stay within limits (0-7 days)
+          const totalDays = Object.values(prev.diasVisita).filter(Boolean).length + 
+                          Object.values(prev.diasVisitaTerceiro || {}).filter(Boolean).length;
+          const limitedVisitas = Math.min(totalDays, 7);
+          newState.horasTotais = Number(value) * limitedVisitas;
+        }
+        
+        if (name === 'quantVisitas') {
+          // Limit to 0-7
+          const limitedValue = Math.max(0, Math.min(7, Number(value)));
+          newState.quantVisitas = limitedValue;
+          newState.horasTotais = prev.quantHoras * limitedValue;
         }
         
         return newState;
@@ -208,8 +262,24 @@ export function useVisitaForm({ visita, onClose }: UseVisitaFormProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      if (!form.promotorId || !form.lojaId || !form.rotaId) {
+      // Validate required fields based on tipoAtendimento
+      if (!form.lojaId || !form.rotaId) {
         toast.error('Por favor, preencha todos os campos obrigatórios');
+        return;
+      }
+      
+      if (form.tipoAtendimento === 'PRÓPRIO' && !form.promotorId) {
+        toast.error('Por favor, selecione um promotor');
+        return;
+      }
+      
+      if (form.tipoAtendimento === 'TERCEIRO' && !form.agenciaId) {
+        toast.error('Por favor, selecione uma agência');
+        return;
+      }
+      
+      if (form.tipoAtendimento === 'MISTO' && (!form.promotorId || !form.agenciaId)) {
+        toast.error('Por favor, selecione um promotor e uma agência');
         return;
       }
       
@@ -232,10 +302,12 @@ export function useVisitaForm({ visita, onClose }: UseVisitaFormProps) {
     activeTab,
     setActiveTab,
     handleChange,
+    handleTipoAtendimentoChange,
     handleSubmit,
     promotores,
     lojas,
     rotas,
+    agencias,
     isEditing: !!visita
   };
 }

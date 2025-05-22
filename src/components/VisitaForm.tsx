@@ -22,10 +22,12 @@ const VisitaForm: React.FC<VisitaFormProps> = ({ visita, onClose }) => {
     activeTab,
     setActiveTab,
     handleChange,
+    handleTipoAtendimentoChange,
     handleSubmit,
     promotores,
     lojas,
     rotas,
+    agencias,
     isEditing
   } = useVisitaForm({ visita, onClose });
 
@@ -44,6 +46,8 @@ const VisitaForm: React.FC<VisitaFormProps> = ({ visita, onClose }) => {
           promotores={promotores}
           lojas={lojas}
           rotas={rotas}
+          agencias={agencias}
+          handleTipoAtendimentoChange={handleTipoAtendimentoChange}
         />
       )}
       

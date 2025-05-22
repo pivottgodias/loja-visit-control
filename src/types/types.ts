@@ -56,13 +56,21 @@ export interface Agencia {
 export interface Visita {
   id: string;
   promotorId: string;
+  agenciaId?: string;
   lojaId: string;
   rotaId: string;
   tipoAtendimento: "PRÓPRIO" | "TERCEIRO" | "MISTO";
-  periodo: string;
   quantVisitas: number;
   horasTotais: number;
   diasVisita: {
+    segunda: boolean;
+    terca: boolean;
+    quarta: boolean;
+    quinta: boolean;
+    sexta: boolean;
+    sabado: boolean;
+  };
+  diasVisitaTerceiro?: {
     segunda: boolean;
     terca: boolean;
     quarta: boolean;

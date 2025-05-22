@@ -10,6 +10,7 @@ import { v4 as uuidv4 } from 'uuid';
 interface PromotorFormProps {
   promotor?: Promotor;
   onClose: () => void;
+  onlyProprio?: boolean;
 }
 
 const initialPromotor: Omit<Promotor, 'id'> = {
@@ -21,15 +22,20 @@ const initialPromotor: Omit<Promotor, 'id'> = {
   gerencia: '',
 };
 
-const PromotorForm: React.FC<PromotorFormProps> = ({ promotor, onClose }) => {
+const PromotorForm: React.FC<PromotorFormProps> = ({ promotor, onClose, onlyProprio = false }) => {
   const { addPromotor, updatePromotor } = useAppContext();
-  const [form, setForm] = useState<Omit<Promotor, 'id'>>(initialPromotor);
+  const [form, setForm] = useState<Omit<Promotor, 'id'>>({...initialPromotor});
 
   useEffect(() => {
     if (promotor) {
       setForm({ ...promotor });
+    } else {
+      // For new promotors when onlyProprio is true
+      if (onlyProprio) {
+        setForm({...initialPromotor, tipo: "PRÓPRIO"});
+      }
     }
-  }, [promotor]);
+  }, [promotor, onlyProprio]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -75,18 +81,25 @@ const PromotorForm: React.FC<PromotorFormProps> = ({ promotor, onClose }) => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormField
-          label="Tipo"
-          name="tipo"
-          type="select"
-          value={form.tipo}
-          onChange={handleChange}
-          options={[
-            { value: 'PRÓPRIO', label: 'PRÓPRIO' },
-            { value: 'TERCEIRO', label: 'TERCEIRO' }
-          ]}
-          required
-        />
+        {!onlyProprio && (
+          <FormField
+            label="Tipo"
+            name="tipo"
+            type="select"
+            value={form.tipo}
+            onChange={handleChange}
+            options={[
+              { value: 'PRÓPRIO', label: 'PRÓPRIO' },
+              { value: 'TERCEIRO', label: 'TERCEIRO' }
+            ]}
+            required
+          />
+        )}
+        
+        {/* If onlyProprio is true, we don't show the tipo field but still need to track it */}
+        {onlyProprio && (
+          <input type="hidden" name="tipo" value="PRÓPRIO" />
+        )}
 
         <FormField
           label="Código"
@@ -104,7 +117,7 @@ const PromotorForm: React.FC<PromotorFormProps> = ({ promotor, onClose }) => {
           required
         />
 
-        {form.tipo === 'TERCEIRO' && (
+        {form.tipo === 'TERCEIRO' && !onlyProprio && (
           <FormField
             label="Agência"
             name="agencia"

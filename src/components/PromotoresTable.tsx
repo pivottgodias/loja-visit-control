@@ -7,10 +7,16 @@ import { Edit, Trash2 } from 'lucide-react';
 
 interface PromotoresTableProps {
   onEdit: (promotor: Promotor) => void;
+  filterTipo?: "PRÓPRIO" | "TERCEIRO";
 }
 
-const PromotoresTable: React.FC<PromotoresTableProps> = ({ onEdit }) => {
+const PromotoresTable: React.FC<PromotoresTableProps> = ({ onEdit, filterTipo }) => {
   const { promotores, deletePromotor } = useAppContext();
+
+  // Filter promotores by tipo if filterTipo is provided
+  const filteredPromotores = filterTipo 
+    ? promotores.filter(p => p.tipo === filterTipo)
+    : promotores;
 
   return (
     <div className="overflow-x-auto">
@@ -27,14 +33,16 @@ const PromotoresTable: React.FC<PromotoresTableProps> = ({ onEdit }) => {
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-300">
-          {promotores.length === 0 ? (
+          {filteredPromotores.length === 0 ? (
             <tr>
               <td colSpan={7} className="px-4 py-2 text-center text-gray-500">
-                Nenhum promotor cadastrado.
+                {filterTipo 
+                  ? `Nenhum promotor ${filterTipo === 'PRÓPRIO' ? 'próprio' : 'terceirizado'} cadastrado.`
+                  : 'Nenhum promotor cadastrado.'}
               </td>
             </tr>
           ) : (
-            promotores.map((promotor) => (
+            filteredPromotores.map((promotor) => (
               <tr key={promotor.id} className="hover:bg-gray-50">
                 <td className="px-4 py-2">{promotor.tipo}</td>
                 <td className="px-4 py-2">{promotor.codigo}</td>
