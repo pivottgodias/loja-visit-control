@@ -4,6 +4,7 @@ import { Visita } from '../types/types';
 import { useAppContext } from '../contexts/AppContext';
 import { toast } from '@/components/ui/sonner';
 import { v4 as uuidv4 } from 'uuid';
+import { obterFrequenciaVisita } from '../services/classificacaoService';
 
 // Import the form components
 import FormHeader from './visita-form/FormHeader';
@@ -18,12 +19,12 @@ interface VisitaFormProps {
   onClose: () => void;
 }
 
-// Define initial state directly as an object without spreading
-const initialVisita = {
+// Define initial state directly as an object
+const initialVisita: Omit<Visita, 'id'> = {
   promotorId: '',
   lojaId: '',
   rotaId: '',
-  tipoAtendimento: 'PRÓPRIO' as 'PRÓPRIO' | 'TERCEIRO' | 'MISTO',
+  tipoAtendimento: 'PRÓPRIO',
   periodo: '',
   quantVisitas: 0,
   horasTotais: 0,
@@ -71,51 +72,7 @@ const VisitaForm: React.FC<VisitaFormProps> = ({ visita, onClose }) => {
   // Initialize form with a deep copy of initialVisita
   const [form, setForm] = useState<Omit<Visita, 'id'>>(() => {
     // Return a new object with all properties explicitly copied
-    return {
-      promotorId: initialVisita.promotorId,
-      lojaId: initialVisita.lojaId,
-      rotaId: initialVisita.rotaId,
-      tipoAtendimento: initialVisita.tipoAtendimento,
-      periodo: initialVisita.periodo,
-      quantVisitas: initialVisita.quantVisitas,
-      horasTotais: initialVisita.horasTotais,
-      diasVisita: {
-        segunda: initialVisita.diasVisita.segunda,
-        terca: initialVisita.diasVisita.terca,
-        quarta: initialVisita.diasVisita.quarta,
-        quinta: initialVisita.diasVisita.quinta,
-        sexta: initialVisita.diasVisita.sexta,
-        sabado: initialVisita.diasVisita.sabado,
-      },
-      faturamentoMensal: {
-        janeiro: initialVisita.faturamentoMensal.janeiro,
-        fevereiro: initialVisita.faturamentoMensal.fevereiro,
-        marco: initialVisita.faturamentoMensal.marco,
-        abril: initialVisita.faturamentoMensal.abril,
-        maio: initialVisita.faturamentoMensal.maio,
-        junho: initialVisita.faturamentoMensal.junho,
-        julho: initialVisita.faturamentoMensal.julho,
-        agosto: initialVisita.faturamentoMensal.agosto,
-        setembro: initialVisita.faturamentoMensal.setembro,
-        outubro: initialVisita.faturamentoMensal.outubro,
-        novembro: initialVisita.faturamentoMensal.novembro,
-        dezembro: initialVisita.faturamentoMensal.dezembro,
-      },
-      custoPorPromotor: initialVisita.custoPorPromotor,
-      custoPorPromotorHora: initialVisita.custoPorPromotorHora,
-      custoPorLoja: initialVisita.custoPorLoja,
-      mixIdeal: initialVisita.mixIdeal,
-      mixIdealPontos: initialVisita.mixIdealPontos,
-      produtoBonus: initialVisita.produtoBonus,
-      sugestaoVisitas: initialVisita.sugestaoVisitas,
-      quantHoras: initialVisita.quantHoras,
-      frequenciaNegociada: initialVisita.frequenciaNegociada,
-      frequenciaSolicitada: initialVisita.frequenciaSolicitada,
-      justificativa: initialVisita.justificativa,
-      decisaoFinal: initialVisita.decisaoFinal,
-      planoDeAcao: initialVisita.planoDeAcao,
-      prazo: initialVisita.prazo
-    };
+    return { ...initialVisita };
   });
   
   const [activeTab, setActiveTab] = useState<'geral' | 'financeiro' | 'planejamento'>('geral');
@@ -123,12 +80,12 @@ const VisitaForm: React.FC<VisitaFormProps> = ({ visita, onClose }) => {
   // Update form when visita prop changes
   useEffect(() => {
     if (visita) {
-      // Explicitly copy all properties to avoid spread operator issues
+      // Explicitly create a new object with properties copied from visita
       setForm({
         promotorId: visita.promotorId,
         lojaId: visita.lojaId,
         rotaId: visita.rotaId,
-        tipoAtendimento: visita.tipoAtendimento || 'PRÓPRIO',
+        tipoAtendimento: visita.tipoAtendimento,
         periodo: visita.periodo,
         quantVisitas: visita.quantVisitas,
         horasTotais: visita.horasTotais,
@@ -171,6 +128,27 @@ const VisitaForm: React.FC<VisitaFormProps> = ({ visita, onClose }) => {
       });
     }
   }, [visita]);
+
+  // Apply store classification when loja changes
+  useEffect(() => {
+    if (form.lojaId) {
+      const loja = lojas.find(l => l.id === form.lojaId);
+      
+      if (loja && loja.pontuacaoFinal && loja.diasVisitaSugeridos) {
+        setForm(prev => ({
+          ...prev,
+          // Apply recommended visit days if available
+          diasVisita: loja.diasVisitaSugeridos || prev.diasVisita,
+          // Apply recommended hours if available
+          quantHoras: loja.horasFrequencia || prev.quantHoras,
+          // Calculate how many visits per week based on selected days
+          quantVisitas: Object.values(loja.diasVisitaSugeridos).filter(Boolean).length,
+          // Update the total hours
+          horasTotais: (loja.horasFrequencia || 0) * Object.values(loja.diasVisitaSugeridos).filter(Boolean).length,
+        }));
+      }
+    }
+  }, [form.lojaId, lojas]);
   
   // Handle form field changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -186,7 +164,18 @@ const VisitaForm: React.FC<VisitaFormProps> = ({ visita, onClose }) => {
           diasVisita: {
             ...prev.diasVisita,
             [child]: (e.target as HTMLInputElement).checked
-          }
+          },
+          // Update quantVisitas when changing days
+          quantVisitas: Object.values({
+            ...prev.diasVisita,
+            [child]: (e.target as HTMLInputElement).checked
+          }).filter(Boolean).length
+        }));
+        
+        // Update horasTotais when changing dias
+        setForm(prev => ({
+          ...prev,
+          horasTotais: prev.quantHoras * prev.quantVisitas
         }));
       } else if (parent === 'faturamentoMensal') {
         setForm(prev => ({
@@ -198,23 +187,33 @@ const VisitaForm: React.FC<VisitaFormProps> = ({ visita, onClose }) => {
         }));
       } else {
         // For other nested objects we might add in the future
-        setForm(prev => ({
-          ...prev,
-          [parent]: {
-            ...prev[parent as keyof typeof prev],
-            [child]: type === 'checkbox' 
+        setForm(prev => {
+          const newState = { ...prev };
+          if (parent in newState) {
+            const parentObj = { ...(prev as any)[parent] };
+            parentObj[child] = type === 'checkbox' 
               ? (e.target as HTMLInputElement).checked
-              : type === 'number' ? Number(value) : value
+              : type === 'number' ? Number(value) : value;
+            (newState as any)[parent] = parentObj;
           }
-        }));
+          return newState;
+        });
       }
     } else {
-      setForm(prev => ({
-        ...prev,
-        [name]: type === 'checkbox' 
+      setForm(prev => {
+        const newState = { ...prev };
+        (newState as any)[name] = type === 'checkbox' 
           ? (e.target as HTMLInputElement).checked 
-          : type === 'number' ? Number(value) : value
-      }));
+          : type === 'number' ? Number(value) : value;
+          
+        // Update horasTotais when changing quantHoras or quantVisitas
+        if (name === 'quantHoras' || name === 'quantVisitas') {
+          newState.horasTotais = (name === 'quantHoras' ? Number(value) : prev.quantHoras) * 
+                               (name === 'quantVisitas' ? Number(value) : prev.quantVisitas);
+        }
+        
+        return newState;
+      });
     }
   };
 

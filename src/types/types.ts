@@ -30,6 +30,20 @@ export interface Loja {
   status: string;
   estado: string;
   tamanho: "P" | "M" | "G" | "CASH";
+  pontos?: number;
+  mixIdealClassificacao?: "ACIMA" | "MÉDIO" | "ABAIXO";
+  mixIdealPontos?: number;
+  bonusPontos?: number;
+  pontuacaoFinal?: number;
+  horasFrequencia?: number;
+  diasVisitaSugeridos?: {
+    segunda: boolean;
+    terca: boolean;
+    quarta: boolean;
+    quinta: boolean;
+    sexta: boolean;
+    sabado: boolean;
+  };
 }
 
 export interface Agencia {
@@ -88,3 +102,39 @@ export interface Visita {
 
 export type DiasSemana = "segunda" | "terca" | "quarta" | "quinta" | "sexta" | "sabado";
 export type MesesAno = "janeiro" | "fevereiro" | "marco" | "abril" | "maio" | "junho" | "julho" | "agosto" | "setembro" | "outubro" | "novembro" | "dezembro";
+
+// Definições para a lógica de classificação de lojas
+export interface MixIdealConfig {
+  tamanho: "P" | "M" | "G" | "CASH";
+  basePoints: number;
+  classificacoes: {
+    ACIMA: { pontos: number; soma: number };
+    MÉDIO: { pontos: number; soma: number };
+    ABAIXO: { pontos: number; soma: number };
+  };
+}
+
+export interface BonusConfig {
+  nome: string;
+  pontos: number;
+}
+
+export interface PontuacaoFinalConfig {
+  min: number;
+  max: number;
+  label: string;
+}
+
+export interface FrequenciaVisitaConfig {
+  tamanho: "P" | "M" | "G" | "CASH";
+  pontos: number;
+  horasFrequencia: number;
+  diasSemana: {
+    segunda: boolean;
+    terca: boolean;
+    quarta: boolean;
+    quinta: boolean;
+    sexta: boolean;
+    sabado: boolean;
+  };
+}
