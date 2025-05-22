@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { cn } from '@/lib/utils';
 
 interface TabNavProps {
   activeTab: 'geral' | 'financeiro' | 'planejamento';
@@ -12,21 +13,36 @@ const TabNav: React.FC<TabNavProps> = ({ activeTab, setActiveTab }) => {
       <nav className="flex -mb-px">
         <button 
           type="button"
-          className={`py-2 px-4 font-medium ${activeTab === 'geral' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+          className={cn(
+            "py-2 px-4 font-medium",
+            activeTab === 'geral' 
+              ? "text-blue-600 border-b-2 border-blue-600" 
+              : "text-gray-500 hover:text-gray-700"
+          )}
           onClick={() => setActiveTab('geral')}
         >
           Dados Gerais
         </button>
         <button 
           type="button"
-          className={`py-2 px-4 font-medium ${activeTab === 'financeiro' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+          className={cn(
+            "py-2 px-4 font-medium",
+            activeTab === 'financeiro' 
+              ? "text-blue-600 border-b-2 border-blue-600" 
+              : "text-gray-500 hover:text-gray-700"
+          )}
           onClick={() => setActiveTab('financeiro')}
         >
           Financeiro
         </button>
         <button 
           type="button"
-          className={`py-2 px-4 font-medium ${activeTab === 'planejamento' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+          className={cn(
+            "py-2 px-4 font-medium",
+            activeTab === 'planejamento' 
+              ? "text-blue-600 border-b-2 border-blue-600" 
+              : "text-gray-500 hover:text-gray-700"
+          )}
           onClick={() => setActiveTab('planejamento')}
         >
           Planejamento
